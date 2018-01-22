@@ -1,13 +1,79 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-styles/color.html">
+
 
 <dom-module id="whose-flag-app">
+
   <template>
+
     <style>
+
       :host {
         display: block;
+        font-family: Roboto, Noto, sans-serif;
+      }
+      paper-button {
+        color: white;
+      }
+      paper-button.another {
+        background: var(--paper-blue-500);
+        width: 100%;
+      }
+      paper-button.another:hover {
+        background: var(--paper-light-blue-500);
+      }
+      paper-button.answer {
+        background: var(--paper-purple-500);
+        flex-grow: 1;
+      }
+      paper-button.answer:hover {
+        background: var(--paper-pink-500);
+      }
+      app-toolbar {
+        background-color: var(--paper-blue-500);
+        color: white;
+        margin: 20px 0;
+      }
+      iron-image {
+        border: solid;
+        width: 100%;
+        --iron-image-width: 100%;
+         background-color: white;
+      }
+      #flag-image-container {
+        max-width: 600px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      #answer-button-container {
+        display: flex; /* or inline-flex */
+        flex-flow: row wrap;
+        justify-content:space-around;
       }
     </style>
-    <h2>Hello [[prop1]]!</h2>
+
+    <app-header>
+      <app-toolbar>
+        <div main-title>Whose flag is this?</div>
+      </app-toolbar>
+    </app-header>
+
+    <div id="flag-image-container">
+      <iron-image 
+        id="flag-image"
+        preload fade src="data/svg/BR.svg">
+      </iron-image>
+      <div id="answer-button-container">
+        <paper-button id="optionA" class="answer">Brazil</paper-button>
+        <paper-button id="optionB" class="answer">Uruguay</paper-button>
+      </div>
+      <p>A message will go here, telling you if you got it right.</p>
+      <paper-button class="another" id="another">Another!</paper-button> 
+    </div>
+
   </template>
 
   <script>
@@ -19,10 +85,7 @@
       static get is() { return 'whose-flag-app'; }
       static get properties() {
         return {
-          prop1: {
-            type: String,
-            value: 'whose-flag-app'
-          }
+
         };
       }
     }

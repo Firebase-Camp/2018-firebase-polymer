@@ -158,3 +158,99 @@ Currently, the app is defined in a single file at _src/whose-flag-app.html_. The
 ```
 
 Let's break it down.
+
+ 1. The [**dom-module**](https://www.polymer-project.org/2.0/docs/api/elements/Polymer.DomModule) is a custom element itself. 
+    - It provides a registry of _relocatable_DOM content by "id" that is agnostic to bundling. 
+    - By registering the enclosed dom against the specified id, it makes that accessible later via its static _import_ API, regardless of where the content/file was relocated during the bundling. 
+ 
+ 2. The [**template**](https://www.polymer-project.org/2.0/docs/devguide/dom-template) element provides a way for you to create a DOM subtree for your element. 
+    - The **template** block is where we define the visual elements (user interface) of the page, ideally by composing other elements. _(HTML)_
+    - The **style** block defines "look and feel" of the interface. _(CSS)_
+
+ 3. The **script** block contains code that defines your app & provides its functionality or behavior (e.g., handling interactions). _(JS)_.
+    - prop1 is a [**property**](https://www.polymer-project.org/2.0/docs/devguide/properties) that is declared in the class definition for the associated custom element (_WhoseFlagApp_). 
+    - Properties provide state for the element, enable 2-way [data binding](https://www.polymer-project.org/2.0/docs/devguide/data-binding) (using double-backet ```[[propname]] ``` syntax) and can [mapped/reflected](https://www.polymer-project.org/2.0/docs/devguide/properties#property-name-mapping) to element attributes.
+
+## 4. Serve the app
+
+You can test your app locally using ```polymer serve ``` and manually opening the browser to the specified URL. Alternatively use ```polymer serve --open``` to auto-launch browser to the app page.
+
+Note: this does auto-rebuild the app as you make changes to source. However it does _not_ seem to do hot reloads; rather, you need to manually refresh the browser to see the updated app.
+
+## 5. Create the User Interface with existing Web Components
+
+The advantage of web components is that you can not only _create_ custom elements, but you can _import and reuse_ custom elements created by others. [WebComponents.org](https://www.webcomponents.org/) is a central repository where both third-party-developed and Polymer-team-developed custom elements can be found (with demos and documentation).
+
+Process to install/use these components:
+ * ```cd``` to the root folder of your app
+ * ```bower install <name> --save``` where name is replaced by the appropirate custom-element name e.g., ```bower install app-layout --save``` will install the "app-layout" component and save that dependencys to the bower.json file.
+ * ```<link rel="import" href="../../bower_components/app-layout/app-layout.html"> ``` in the _whose-flag-app.html_ file to "import" that custom element's definition into the current app.
+ * Now go ahead and _use_ that custom element in the HTML file -- e.g., you can now say ```<app-header> .. </app-header>``` in the template section, to effectively include the _app-header_ dom subtree into that of the _whose-flag-app_ custom element.
+
+Note: Some web components are not about visual HTML elements (structure) but about custom style that is reusable - e.g., see [paper-styles](https://www.webcomponents.org/element/PolymerElements/paper-styles) which enforces Material Design guidelines - e.g., it defines [custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_variables) for Material Design colors, making it easier to use them consistently in other custom elements that "import" this paper-style element.
+
+## 6. Style your app
+
+For our element, we first installed paper-styles
+
+```
+bower install paper-styles --save
+```
+
+then added it to our imports as before. We then changed the default element style in our custom element as follows:
+
+```
+    <style>
+      :host {
+        display: block;
+        font-family: Roboto, Noto, sans-serif;
+      }
+      paper-button {
+        color: white;
+      }
+      paper-button.another {
+        background: var(--paper-blue-500);
+        width: 100%;
+      }
+      paper-button.another:hover {
+        background: var(--paper-light-blue-500);
+      }
+      paper-button.answer {
+        background: var(--paper-purple-500);
+        flex-grow: 1;
+      }
+      paper-button.answer:hover {
+        background: var(--paper-pink-500);
+      }
+      app-toolbar {
+        background-color: var(--paper-blue-500);
+        color: white;
+        margin: 20px 0;
+      }
+      iron-image {
+        border: solid;
+        width: 100%;
+        --iron-image-width: 100%;
+         background-color: white;
+      }
+      #flag-image-container {
+        max-width: 600px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      #answer-button-container {
+        display: flex; /* or inline-flex */
+        flex-flow: row wrap;
+        justify-content:space-around;
+      }
+    </style>
+```
+
+The ```<style>``` within the element template is _scoped locally_ - meaning those styles are enforced only on that element. The rest of the page does not know about it - this is the encapsulation that shadow DOM enables.
+
+However, the ```:host``` selector allows you to pierce this constraint and enforce styles at the _parent_ element, enabling a consistent look & feel app-wide.
+
+
+
+
+
