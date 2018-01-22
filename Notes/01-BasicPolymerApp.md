@@ -396,6 +396,45 @@ BECOMES
 
 ## 9. Randomize the country options
 
+Make this a proper game by adding a function to randomly pick a country from the countryList. 
+
+```
+__getRandomCountry() {
+  return Math.floor(Math.random() * (this.countryList.length));
+}
+```
+
+Then use the random picker to initialize the countryA and countryB properties, making sure they are both unique (but random) values.
+
+```
+while (!this.countryA || !this.countryB || (this.countryA.code == this.countryB.code)){
+  this.countryA = this.countryList[this.__getRandomCountry()];
+  this.countryB = this.countryList[this.__getRandomCountry()];
+}
+```
+
+And flip a coin to pick which one of those two will be the "correct" answer.
+
+```
+let coin = (Math.floor(Math.random() * 2));
+this.correctAnswer = coin == 1 ? this.countryA : this.countryB;
+```
+
+Finally fix the "Another Game" button response by defining an on-click handler that simply restarts the game.
+
+```
+// In template
+<paper-button class="another" id="another" 
+    on-click="_restart">Another!</paper-button> 
+
+// In class
+_restart() {
+    window.location.reload();
+}
+```
+
+This completes the app creation.
+
 ## 10. Build app for production / Deploy to Firebase
 
 

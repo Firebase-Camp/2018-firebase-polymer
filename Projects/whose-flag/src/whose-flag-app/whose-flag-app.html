@@ -80,7 +80,7 @@
         <paper-button id="optionB" class="answer" on-click="_selectAnswer">[[countryB.name]]</paper-button>
       </div>
       <p> [[outputMessage]] </p>
-      <paper-button class="another" id="another">Another!</paper-button> 
+      <paper-button class="another" id="another" on-click="_restart">Another!</paper-button> 
     </div>
 
   </template>
@@ -118,12 +118,21 @@
         };
       }
 
+      /* Get a random number, index into countryList to get value */
+      __getRandomCountry() {
+        return Math.floor(Math.random() * (this.countryList.length));
+      }
+
       /* Handle <iron-ajax> response events */
       _handleResponse(event) {
         this.countryList = event.detail.response.countrycodes;
-        this.countryA = this.countryList[0];
-        this.countryB = this.countryList[1];
-        this.correctAnswer = this.countryA;
+        while (!this.countryA || !this.countryB || (this.countryA.code == this.countryB.code)){
+          this.countryA = this.countryList[this.__getRandomCountry()];
+          this.countryB = this.countryList[this.__getRandomCountry()];
+        }
+        
+        let coin = (Math.floor(Math.random() * 2));
+        this.correctAnswer = coin == 1 ? this.countryA : this.countryB;
       }
 
       /* Handle paper-button click events */
@@ -136,6 +145,11 @@
         else {
           this.outputMessage = `Nope! The correct answer is ${this.correctAnswer.name} !`;
         }
+      }
+
+      /* Request a new game (handled here by reloading window) */
+      _restart() {
+        window.location.reload();
       }
 
     }
