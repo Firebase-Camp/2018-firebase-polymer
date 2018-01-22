@@ -101,7 +101,7 @@ e.g.,
 </div>
 ```
 
-Here are some fundamental concepts:
+Here are some fundamental concepts from [the quick tour](https://www.polymer-project.org/2.0/start/quick-tour):
 
  1. _Register an Element_ > [Element Registration](https://www.polymer-project.org/2.0/docs/devguide/registering-elements) | [Lifecycle Callbacks](https://www.polymer-project.org/2.0/docs/devguide/registering-elements#lifecycle-callbacks)
  2. _Add shadow DOM_ > [DOM Templating](https://www.polymer-project.org/2.0/docs/devguide/dom-template)
@@ -110,3 +110,66 @@ Here are some fundamental concepts:
  5. _Declare a property_ > [Declared Properties](https://www.polymer-project.org/2.0/docs/devguide/properties) 
  6. _Bind to a property_
  7. _Repeat templates with <dom-repeat>_ > [Template Repeater](https://www.polymer-project.org/2.0/docs/devguide/templates)
+
+
+### Register an Element
+
+The _index.html_ imports _custom-element.html_ in the <head> element. Then uses it in the <body>.
+
+```
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://polygit.org/components/webcomponentsjs/webcomponents-loader.js"></script>
+    <link rel="import" href="custom-element.html">
+  </head>
+  <body>
+    <custom-element></custom-element>
+  </body>
+</html>
+```
+
+This is what the _custom-element.html_ looks like.
+
+```
+<link rel="import"  href="https://polygit.org/components/polymer/polymer-element.html">
+
+<script>
+  // Define the class for a new element called custom-element
+  class CustomElement extends Polymer.Element {
+    static get is() { return "custom-element"; }
+    constructor() {
+        super();
+        this.textContent = "I'm a custom-element.";
+      }
+  }
+  // Register the new element with the browser
+  customElements.define(CustomElement.is, CustomElement);
+</script>
+```
+
+ 1. Create an ES6 class _CustomElement_ that extends _Polymer.Element_.
+ 2. Define its element name by returning the relevant string from _is()_. The chosen custom element (tag) name **must start with an ASCII later, and must contain a '-' i.e., have at least two words, hyphenated together**
+ 3. Register this class with the browser using ```customElements.define(CustomElement.is, CustomElement)```.
+
+Registering a custom element with the browser associates that custom element's _name_ (defined by CustomElement.is) with a _class_, thus making it possible to have _properties_ and _methods_ associated with that custom element.
+
+
+### Handling Lifecycle Callbacks
+
+The custom elements _specification_ defines callbacks (called _custom element reactions_) that provide hooks for you to run your code when specific lifecycle changes occur. These are:
+
+ * _constructor_ : called when an element is created, or a previously-created element is 'defined'.
+ * _connectedCallback_ : called when element is added to a document (DOM)
+ * _disconnectedCallback_ : called when element is removed from a document
+ * _attributeChangedCallback_ : called when element's attributes are changed, appended, removed or replaced.
+
+In your implementation of these callbacks you **must** always call the equivalent callback on the superclass first (e.g., super() for constructor, super.connectedCallback() for that callback etc.) - this allows Polymer to hook into the custom element's lifecycle before you handle the event.
+
+**Special Case: Constructor**
+The custom code within constructor _cannot_ add (or examine) custom element's attributes and children. So, for the most part, code requiring access to these values must be run in the connectedCallback (after element is stamped and attached to a document).
+
+**Special Case: ready() callback**
+While not specified in the custom element specification (i.e., will not be available in core platform implementations of web components), the _Polymer_ library does provide one additional callback: **ready()**.
+
+This is [called the FIRST time the element is added to the DOM](https://www.polymer-project.org/2.0/docs/devguide/custom-elements#polymer-element-initialization) - you can use this for one-time initialization work after element creation (i.e., where shadow DOM is attached and initial values can be given to data bindings) but beware of limitations to use.

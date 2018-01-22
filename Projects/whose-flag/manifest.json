@@ -1,0 +1,7 @@
+{
+  "name": "whose-flag",
+  "short_name": "whose-flag",
+  "description": "Flag-Guessing Game",
+  "start_url": "/",
+  "display": "standalone"
+}
