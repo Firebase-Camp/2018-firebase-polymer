@@ -6,7 +6,8 @@
     "polymer": "Polymer/polymer#^2.0.0",
     "app-layout": "^2.0.4",
     "iron-image": "^2.1.2",
-    "paper-button": "^2.0.0"
+    "paper-button": "^2.0.0",
+    "iron-ajax": "^2.0.8"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^6.0.0",

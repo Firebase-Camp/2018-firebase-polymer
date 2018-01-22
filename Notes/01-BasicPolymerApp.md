@@ -5,6 +5,10 @@
 
 This is a walkthrough of the [_Build and Deploy a Polymer 2.0 App From Scratch_](https://codelabs.developers.google.com/codelabs/whose-flag/index.html) Codelab
 
+Note that while we are using Polymer (library to build web components, with a little "extra" synctatic sugar & helpers) - you should be able to build custom elements without it, by using the vanilla API methods.
+
+Once created, you should be able to use custom elements anywhere just like regular HTML tags. But can you? How "WC-ready" are the various front-end frameworks? The [Custom Elements Everywhere](https://custom-elements-everywhere.com/) site tracks compliance. Learn more from Rob Dodson's talk at Polymer Summit 2017. [Slides](https://speakerdeck.com/robdodson/custom-elements-everywhere). [Video]()
+
 > What you build
 
 A simple flag-guessing game. Present a flag to the user. Give them two choices for an answer. They pick one and you tell them if they are right or wrong. Plus, a button that let's them go another round.
@@ -250,7 +254,148 @@ The ```<style>``` within the element template is _scoped locally_ - meaning thos
 
 However, the ```:host``` selector allows you to pierce this constraint and enforce styles at the _parent_ element, enabling a consistent look & feel app-wide.
 
+## 7. Setup data bindings
+
+Currently all data is provided as literals (fixed strings). In reality, we want these to be variable whose values are set based on the current state of th application (i.e., current flag shown should influence labels on option buttons) or based on user input (i.e., the underlying message should reflect a 'success' or 'failure' text based on the choice made)
+
+This is done by data binding.
+
+The element defines properties (within the Class declaration) that are then "bound" to templated variables using the ```[[ propName ]]``` syntax. The property ideally has a default value set at creation, which is now bound to the element shown in the interface.
+
+1-way data binding now means that any change to the property value (in the JavaScript code) will automatically be reflected in a change to the value of
+the bound template variable.
+
+The property value changes are typically done by methods invoked in response to some internal or external action - e.g., a button click handler can now be used to change the "message" property, which is used to provide the status message.
+
+So now we can change
+
+```
+<paper-button id="optionA">Brazil</paper-button>
+<paper-button id="optionB">Uruguay</paper-button>
+```
+
+to 
+
+```
+<paper-button id="optionA">[[countryA]]</paper-button>
+<paper-button id="optionB">[[countryB]]</paper-button>
+```
+
+and also updated with click handlers
+
+```
+<paper-button id="optionA" class="answer" 
+       on-click="_selectAnswer">[[countryA]]</paper-button>
+<paper-button id="optionB" class="answer" 
+       on-click="_selectAnswer">[[countryB]]</paper-button>
+  .
+  .
+<p> [[outputMessage]] </p>
+```
 
 
+where these template variables are bound to properties in the app class, which have initial default provided:
+
+```
+static get properties() {
+        return {
+          countryA: {
+            type: String,
+            value: "Brazil"
+          },
+          countryB: {
+            type: String,
+            value: "Uruguay"
+          },
+          outputMessage: {
+            type: String,
+            value: "What's your answer?"
+          },
+          correctAnswer: {
+            type: String,
+            value: "Brazil"
+          }, 
+          userAnswer: {
+            type: String,
+            value: "Brazil"
+          }
+        };
+```
+
+And the property values can now be updated by class methods (e.g., click event handlers), automatically updating bound variables in the process.
+
+```
+_selectAnswer(event) {
+    let clickedButton = event.target;
+    this.userAnswer = clickedButton.textContent;
+    if (this.userAnswer == this.correctAnswer) {
+      this.outputMessage = `${this.userAnswer} is correct!`;
+    }
+    else {
+      this.outputMessage = `Nope! The correct answer is ${this.correctAnswer} !`;
+    }
+}
+```
+
+_Note:_ The "on-click=''" attribute is a Polymer-specific "synctatic sugar" approach to simplifying association of event handler callback methods with elements.
+
+## 8. Load Country Data from a file
+
+Next, we want to stamp out templates for each flag - which means we need data for all the flags we plan to use. The data in step 5 also contains a _countrycodes.json_ file with a mapping of country codes and names, along with an SVG file that contains flag images correspondingly named by country code.
+
+1. Load the file using the [```<iron-ajax>```](https://www.webcomponents.org/element/PolymerElements/iron-ajax) element, which allows network request functionality using this API:
+```
+<iron-ajax
+    auto
+    url="https://www.googleapis.com/youtube/v3/search"
+    params='{"part":"snippet", "q":"polymer", "key": "YOUTUBE_API_KEY", "type": "video"}'
+    handle-as="json"
+    on-response="handleResponse"
+    debounce-duration="300"></iron-ajax>
+```
+
+Install the element using bower, import it into the app HTML file, then add it into the template as follows:
+
+```
+<iron-ajax
+  auto
+  url="data/countrycodes.json"
+  handle-as="json"
+  on-response="_handleResponse"></iron-ajax>
+```
+
+This effectively fetches the data in the specified url, treats that data as JSON, calls the specified on-response handler with the data once the fetch completes. The "auto" simply ensures that this element automatically re-fetches data (and invokes handler) every time that URL or parameters change.
+
+```
+_handleResponse(event) {
+    this.countryList = event.detail.response.countrycodes;
+    this.countryA = this.countryList[0];
+    this.countryB = this.countryList[1];
+    this.correctAnswer = this.countryA;
+}
+```
+
+The handler code places the fetched data into a local property (array) and updates the related countryA & countryB properties to point to elements of this data (which are now in object form, not strings)
+
+So make sure countryA, countryB property definitions are changed, and their usage is updated e.g., use ```[[countryA.name]]``` not ```[[countryA]]``` to reflect the new status as objects. Now all other hard-coded strings (e.g., svg images) can now be bound to property names as well.
+
+```
+<iron-image
+    id="flag-image"
+    preload fade src="data/svg/BR.svg">
+</iron-image>
+
+BECOMES
+
+<iron-image
+    id="flag-image"
+    preload fade src="data/svg/[[correctAnswer.code]].svg">
+</iron-image>
+```
+
+
+## 9. Randomize the country options
+
+## 10. Build app for production / Deploy to Firebase
 
 

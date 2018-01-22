@@ -3,6 +3,8 @@
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-styles/color.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
 
 
 <dom-module id="whose-flag-app">
@@ -61,16 +63,23 @@
       </app-toolbar>
     </app-header>
 
+    <iron-ajax
+      auto
+      url="data/countrycodes.json"
+      handle-as="json"
+      on-response="_handleResponse">
+    </iron-ajax>
+
     <div id="flag-image-container">
       <iron-image 
         id="flag-image"
-        preload fade src="data/svg/BR.svg">
+        preload fade src="data/svg/[[correctAnswer.code]].svg">
       </iron-image>
       <div id="answer-button-container">
-        <paper-button id="optionA" class="answer">Brazil</paper-button>
-        <paper-button id="optionB" class="answer">Uruguay</paper-button>
+        <paper-button id="optionA" class="answer" on-click="_selectAnswer">[[countryA.name]]</paper-button>
+        <paper-button id="optionB" class="answer" on-click="_selectAnswer">[[countryB.name]]</paper-button>
       </div>
-      <p>A message will go here, telling you if you got it right.</p>
+      <p> [[outputMessage]] </p>
       <paper-button class="another" id="another">Another!</paper-button> 
     </div>
 
@@ -82,12 +91,53 @@
      * @polymer
      */
     class WhoseFlagApp extends Polymer.Element {
+
       static get is() { return 'whose-flag-app'; }
       static get properties() {
         return {
-
+          countryA: {
+            type: Object
+          },
+          countryB: {
+            type: Object
+          },
+          outputMessage: {
+            type: String,
+            value: "What's your answer?"
+          },
+          correctAnswer: {
+            type: Object
+          }, 
+          userAnswer: {
+            type: String,
+            value: "Brazil"
+          },
+          countryList: {
+            type: Object
+          }
         };
       }
+
+      /* Handle <iron-ajax> response events */
+      _handleResponse(event) {
+        this.countryList = event.detail.response.countrycodes;
+        this.countryA = this.countryList[0];
+        this.countryB = this.countryList[1];
+        this.correctAnswer = this.countryA;
+      }
+
+      /* Handle paper-button click events */
+      _selectAnswer(event) {
+        let clickedButton = event.target;
+        this.userAnswer = clickedButton.textContent;
+        if (this.userAnswer == this.correctAnswer.name) {
+          this.outputMessage = `${this.userAnswer} is correct!`;
+        }
+        else {
+          this.outputMessage = `Nope! The correct answer is ${this.correctAnswer.name} !`;
+        }
+      }
+
     }
 
     window.customElements.define(WhoseFlagApp.is, WhoseFlagApp);
