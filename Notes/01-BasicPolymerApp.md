@@ -437,4 +437,112 @@ This completes the app creation.
 
 ## 10. Build app for production / Deploy to Firebase
 
+Till now, ```polymer serve``` is running code in debug-friendly mode by serving files from the local filesystem. For production deploy, you need to optimize the codebase (minify etc.) and also clearly specify what files need to be deployed to hosting/production server.
 
+Do this with a ```polymer.json``` build config file. One should have been created by the init process (ideally with linting rules) but you can replace it with this simple version for now:
+
+```
+{
+ "sources": [
+   "data/*",
+   "data/svg/*"
+ ]
+}
+```
+
+Now run the build process, which should create a build/ directory.
+
+```
+polymer build
+```
+
+Now make sure you install the Firebase CLI (tools) and verify they are installed/
+
+```
+$ npm install -g firebase-tools
+
+$ firebase --version
+3.17.3
+```
+
+Go to the [Firebase Console](https://console.firebase.google.com/?pli=1) (create a new Firebase account if you need one) and create a new Firebase Project (empty). Give it a name you'll remember (e.g., **whose-flag-polymer-fire**).
+
+Now come back to CLI and "login" to your Firebase backend. Then initialize the project (at the root directory of project)
+
+```
+firebase login
+firebase init
+```
+
+You should see a request to select features you want to set up (see below). For now, just select Hosting. We can update/add others later.
+
+```
+? Which Firebase CLI features do you want to setup for this folder? Press Space to select features, then Enter to confirm your choices. (Pre
+ss <space> to select)
+ ◯ Database: Deploy Firebase Realtime Database Rules
+ ◯ Firestore: Deploy rules and create indexes for Firestore
+ ◯ Functions: Configure and deploy Cloud Functions
+❯◯ Hosting: Configure and deploy Firebase Hosting sites
+ ◯ Storage: Deploy Cloud Storage security rules
+
+```
+
+Accept defaults for all questions asked EXCEPT for the "public" directory. Specify **build/default** as the directory -- this is where polymer builds the production-ready app.
+
+```
+? What do you want to use as your public directory? build/default
+? Configure as a single-page app (rewrite all urls to /index.html)? No
+✔  Wrote build/default/404.html
+✔  Wrote build/default/index.html
+
+i  Writing configuration info to firebase.json...
+i  Writing project information to .firebaserc...
+
+✔  Firebase initialization complete!
+```
+
+The **.firebaserc** stores the name of the Firebase (backend) project that is associated with this client app (frontend). The **firebase.json** file then provides configuration information for each of the Firebase products you will use on the backend. (By default, right now it uses only hosting).
+
+Now to deploy the built Polymer app to the Firebase backend, do:
+
+```
+firebase deploy
+```
+
+You should see something like:
+
+```
+=== Deploying to 'whose-flag-polymer-fire'...
+
+i  deploying hosting
+i  hosting: preparing build/default directory for upload...
+✔  hosting: 2 files uploaded successfully
+
+✔  Deploy complete!
+
+Project Console: https://console.firebase.google.com/project/whose-flag-polymer-fire/overview
+Hosting URL: https://whose-flag-polymer-fire.firebaseapp.com
+```
+
+Open the Hosting URL in a browser to see the Polymer app running in the cloud.
+
+> DEBUGGING THE DEPLOY
+
+With recent Polymer updates, there are some issues in deployments. Your first step to debugging is always to check your ```polymer.json``` file for the build configuration properties. Read more about the [options here](https://www.polymer-project.org/2.0/docs/tools/polymer-json).
+
+In my case, I used this updated polymer.json. In particular, it appeared that the "src/**/*" had to be specified explicitly in the sources.
+
+```
+{
+  "entrypoint": "index.html",
+  "shell": "src/whose-flag-app/whose-flag-app.html",
+  "sources": [
+   "src/**/*",
+   "data/*",
+   "data/svg/*",
+   "bower.json"
+  ]
+}
+```
+
+Another useful tip is to always follow the ```polymer build``` with a ```firebase serve``` command. This uses the Firebase CLI to run a server that hosts the actual deployment-ready build - so you can check if your production build was configured/created correctly prior to triggering the actual deploy to the backend.
